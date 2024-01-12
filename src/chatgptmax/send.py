@@ -3,11 +3,16 @@
 import os
 import openai
 import tiktoken
+from openai import OpenAI
 
 # Set up your OpenAI API key
 # Load your API key from an environment variable or secret management service
 # openai.api_key = os.getenv("OPENAI_API_KEY")
-openai.api_key = os.environ["OPENAI_API_KEY"]
+#openai.api_key = os.environ["OPENAI_API_KEY"]
+client = OpenAI(
+    # This is the default and can be omitted
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
 
 def send(
     prompt=None,
@@ -70,14 +75,14 @@ def send(
         ):
             messages.pop(1)  # Remove the oldest chunk
 
-        response = openai.ChatCompletion.create(model=chat_model, messages=messages)
-        chatgpt_response = response.choices[0].message["content"].strip()
+        response = client.chat.completions.create(model=chat_model, messages=messages)
+        chatgpt_response = response.choices[0].message.content.strip()
         responses.append(chatgpt_response)
 
     # Add the final "ALL PARTS SENT" message
     messages.append({"role": "user", "content": "ALL PARTS SENT"})
-    response = openai.ChatCompletion.create(model=chat_model, messages=messages)
-    final_response = response.choices[0].message["content"].strip()
+    response = client.chat.completions.create(model=chat_model, messages=messages)
+    final_response = response.choices[0].message.content.strip()
     responses.append(final_response)
 
     return responses
